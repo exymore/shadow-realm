@@ -1,5 +1,5 @@
 import {Text3D, useAnimations, useGLTF, useTexture} from "@react-three/drei";
-import {useEffect, useRef, useState} from "react";
+import {memo, useEffect, useRef, useState} from "react";
 import {MeshStandardMaterial} from "three";
 import {
     ANIMATION_DURATION,
@@ -7,7 +7,7 @@ import {
     DELIVERY_INTERVAL, GMLRS_WARHEAD_WEIGHT,
     LAUNCH_START_DELAY
 } from "../../constants";
-import {Model} from "./Model";
+import Model from "./Model";
 
 function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
 
@@ -96,4 +96,4 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
 
 useGLTF.preload('/assets/models/himars/himars-transformed.glb');
 
-export default Himars;
+export default memo(Himars);

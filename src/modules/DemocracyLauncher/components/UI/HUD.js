@@ -1,15 +1,16 @@
 import Button from "./Button";
 import {useSpring, animated, easings} from "react-spring";
 import {MAX_LAUNCHERS_COUNT} from "../../constants";
+import {memo} from "react";
 
 function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileScreen}) {
 
     const {number} = useSpring({
         from: {number: 0},
         number: kgDelivered,
-        delay: 17,
+        delay: 100,
         config: {
-            easing: easings.easeInOutQuint,
+            easing: easings.easeInOutQuad,
         }
     });
 
@@ -49,4 +50,4 @@ function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileS
     )
 }
 
-export default HUD;
+export default memo(HUD);
