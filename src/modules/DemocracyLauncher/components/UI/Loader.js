@@ -1,8 +1,13 @@
 import {Html} from '@react-three/drei'
 
 function Loader({progress}) {
-    return <Html center>
-        <h1 className="text-8xl text-bold text-slate-800">{Number(progress).toFixed(0)} % loaded</h1>
+    return <Html>
+        {progress > 0 &&
+            <div className="loader-container">
+                <div className="dimmer"></div>
+                <h1 className="loader-text">Loading: {Number(progress).toFixed(0)} %</h1>
+            </div>
+        }
     </Html>
 }
 

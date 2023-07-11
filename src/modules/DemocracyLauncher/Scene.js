@@ -1,4 +1,4 @@
-import {Suspense, useState} from 'react'
+import {Suspense, useLayoutEffect, useState} from 'react'
 import {Canvas} from '@react-three/fiber'
 import {OrbitControls, PerspectiveCamera, Sky, useProgress} from '@react-three/drei';
 import Grass from "./components/Grass";
@@ -11,7 +11,18 @@ const launchers = [{idx: 0, position: [0, -2, 0], textPosition: [10, 10, -40]}, 
 }, {idx: 2, position: [-50, -2, 0], textPosition: [-40, 10, -40]}];
 
 export default function Scene() {
-    const isMobileScreen = window.innerWidth < 768;
+    const [isMobileScreen, setIsMobileScreen] = useState(false);
+
+    const setMobileScreen = () => setIsMobileScreen(window.innerWidth < 768);
+
+    useLayoutEffect(() => {
+        window.addEventListener('resize', setMobileScreen);
+
+        return () => {
+            window.removeEventListener('resize', setMobileScreen)
+        }
+    }, []);
+
 
     const {progress} = useProgress();
     const isReady = progress === 100;
@@ -43,9 +54,9 @@ export default function Scene() {
             <pointLight position={[-150, 10, 60]} intensity={0.7}/>
             <pointLight position={[0, 100, -100]} intensity={0.2}/>
 
-            <Suspense fallback={<Loader progress={progress}/>}>
-                <Grass width={500} instances={200000}/>
+            <Grass width={500} instances={200000}/>
 
+            <Suspense fallback={<Loader progress={progress}/>}>
                 {visibleIds.map((idx) => <Himars
                     key={idx}
                     visible={idx < visibleIds.length}
@@ -54,6 +65,7 @@ export default function Scene() {
                     {...launchers[idx]}
                 />)}
             </Suspense>
+
 
             <OrbitControls enableZoom={false} enablePan={false} minPolarAngle={0} maxPolarAngle={Math.PI / 2.25}
                            makeDefault/>
