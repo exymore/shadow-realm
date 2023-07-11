@@ -2,10 +2,10 @@ import Button from "./Button";
 import {useSpring, animated, easings} from "react-spring";
 import {MAX_LAUNCHERS_COUNT} from "../../constants";
 
-function HUD({addModel, kgDelivered, models, removeModel, isLaunching}) {
+function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileScreen}) {
 
     const {number} = useSpring({
-        from: { number: 0 },
+        from: {number: 0},
         number: kgDelivered,
         delay: 17,
         config: {
@@ -27,7 +27,7 @@ function HUD({addModel, kgDelivered, models, removeModel, isLaunching}) {
                 </div>
             </div>
 
-            <div className="toast toast-top toast-end">
+            <div className={`toast ${isMobileScreen ? 'toast-bottom' : 'toast-top'} toast-end`}>
                 <div className="card w-96 bg-base-100/10 shadow-xl">
                     <h2 className="font-sans text-white text-2xl font-bold px-5 py-4 rounded-lg">Democracy
                         launchers: {models.length}/3</h2>
