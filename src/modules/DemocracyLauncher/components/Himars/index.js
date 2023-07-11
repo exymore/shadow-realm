@@ -7,16 +7,20 @@ import {
     LAUNCH_START_DELAY
 } from "../../constants";
 import Model from "./Model";
+import {useFrame} from "@react-three/fiber";
 
-function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}) {
+function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible}) {
     const animationInterval = useRef(null);
     const deliveryInterval = useRef(null);
 
     const startSetKgDelivered = useRef(null);
     const stopSetKgDelivered = useRef(null);
 
+    const fireCompletedPercent = useRef(0);
+    const isDemocracyLaunching = useRef(false);
+    const deliveryText = 'Launch\nDemocracy!'
+
     const [hovered, setHovered] = useState(false);
-    const [fireCompletedPercent, setFireCompletedPercent] = useState(0);
 
     useEffect(() => {
         document.body.style.cursor = hovered ? 'pointer' : 'auto'
@@ -26,13 +30,17 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}
     const {nodes, animations} = useGLTF('/assets/models/himars/himars-transformed.glb');
     const {actions, names} = useAnimations(animations, group);
 
-    const isDemocracyLaunching = useMemo(() => fireCompletedPercent > 0, [fireCompletedPercent]);
     const deliveryAnimation = actions?.[names[0]];
 
-    let deliveryText = useMemo(() => isDemocracyLaunching ? `Democracy\nLaunched! ${fireCompletedPercent}%` : `Launch\nDemocracy!`, [fireCompletedPercent, isDemocracyLaunching]);
+    useFrame(() => {
+        if (fireCompletedPercent.current > 0 && fireCompletedPercent.current < 100) {
+            isDemocracyLaunching.current = true;
+        }
+        if (fireCompletedPercent.current === 100) {
+            isDemocracyLaunching.current = false;
+        }
 
-    useEffect(() => {
-        if (fireCompletedPercent >= 100) {
+        if (fireCompletedPercent.current >= 100) {
             clearInterval(animationInterval.current);
             clearInterval(deliveryInterval.current);
 
@@ -40,14 +48,14 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}
             clearTimeout(stopSetKgDelivered.current);
 
             deliveryAnimation.stop();
-            setFireCompletedPercent(0);
+            fireCompletedPercent.current = 0;
             setIsLaunching(false);
         }
-    }, [deliveryAnimation, fireCompletedPercent, setIsLaunching]);
+    });
 
 
     const fire = useCallback(() => {
-        if (isDemocracyLaunching) return;
+        if (isDemocracyLaunching.current) return;
         setIsLaunching(true);
         deliveryAnimation.play();
 
@@ -56,12 +64,13 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}
                 setKgDelivered(prev => prev + GMLRS_WARHEAD_WEIGHT);
             }, DELIVERY_INTERVAL);
         }, LAUNCH_START_DELAY);
+
         stopSetKgDelivered.current = setTimeout(() => {
             clearInterval(deliveryInterval.current);
         }, ANIMATION_DURATION);
 
         animationInterval.current = setInterval(() => {
-            setFireCompletedPercent(prev => prev + 1);
+            fireCompletedPercent.current += 1
         }, ANIMATION_ONE_PERCENT_DURATION);
     }, [deliveryAnimation, isDemocracyLaunching, setIsLaunching, setKgDelivered]);
 
@@ -69,7 +78,6 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}
     return (
         <>
             <Model nodes={nodes} group={group} position={position} scale={4} visible={visible}/>
-
             <Text3D
                 visible={visible}
                 position={textPosition}
