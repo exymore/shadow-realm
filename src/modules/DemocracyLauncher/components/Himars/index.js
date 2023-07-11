@@ -1,15 +1,20 @@
 import {Text3D, useAnimations, useGLTF} from "@react-three/drei";
-import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {memo, useCallback, useEffect, useRef, useState} from "react";
 import {
     ANIMATION_DURATION,
     ANIMATION_ONE_PERCENT_DURATION,
-    DELIVERY_INTERVAL, GMLRS_WARHEAD_WEIGHT,
+    DELIVERY_INTERVAL,
+    FANCY_TEXT_IDLE,
+    FANCY_TEXT_LAUNCHED,
+    GMLRS_WARHEAD_WEIGHT,
     LAUNCH_START_DELAY
 } from "../../constants";
 import Model from "./Model";
 import {useFrame} from "@react-three/fiber";
 
 function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible}) {
+    const [deliveryText, setDeliveryText] = useState(FANCY_TEXT_IDLE);
+
     const animationInterval = useRef(null);
     const deliveryInterval = useRef(null);
 
@@ -18,7 +23,6 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible
 
     const fireCompletedPercent = useRef(0);
     const isDemocracyLaunching = useRef(false);
-    const deliveryText = 'Launch\nDemocracy!'
 
     const [hovered, setHovered] = useState(false);
 
@@ -36,11 +40,10 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible
         if (fireCompletedPercent.current > 0 && fireCompletedPercent.current < 100) {
             isDemocracyLaunching.current = true;
         }
-        if (fireCompletedPercent.current === 100) {
-            isDemocracyLaunching.current = false;
-        }
 
         if (fireCompletedPercent.current >= 100) {
+            isDemocracyLaunching.current = false;
+
             clearInterval(animationInterval.current);
             clearInterval(deliveryInterval.current);
 
@@ -50,6 +53,7 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible
             deliveryAnimation.stop();
             fireCompletedPercent.current = 0;
             setIsLaunching(false);
+            setDeliveryText(FANCY_TEXT_IDLE)
         }
     });
 
@@ -57,6 +61,8 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible
     const fire = useCallback(() => {
         if (isDemocracyLaunching.current) return;
         setIsLaunching(true);
+        setDeliveryText(FANCY_TEXT_LAUNCHED);
+
         deliveryAnimation.play();
 
         startSetKgDelivered.current = setTimeout(() => {
@@ -75,31 +81,29 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching, visible
     }, [deliveryAnimation, isDemocracyLaunching, setIsLaunching, setKgDelivered]);
 
 
-    return (
-        <>
-            <Model nodes={nodes} group={group} position={position} scale={4} visible={visible}/>
-            <Text3D
-                visible={visible}
-                position={textPosition}
-                rotation={[0.2, -3, 0]}
-                curveSegments={32}
-                bevelEnabled
-                bevelSize={0.08}
-                bevelThickness={0.8}
-                height={0.5}
-                lineHeight={0.6}
-                letterSpacing={-0.06}
-                size={4}
-                font="/assets/fonts/Inter_Bold.json"
-                onPointerOver={() => setHovered(true)}
-                onPointerOut={() => setHovered(false)}
-                onClick={fire}
-            >
-                {deliveryText}
-                <meshNormalMaterial/>
-            </Text3D>
-        </>
-    )
+    return (<>
+        <Model nodes={nodes} group={group} position={position} scale={4} visible={visible}/>
+        <Text3D
+            visible={visible}
+            position={textPosition}
+            rotation={[0.2, -3, 0]}
+            curveSegments={32}
+            bevelEnabled
+            bevelSize={0.08}
+            bevelThickness={0.8}
+            height={0.5}
+            lineHeight={0.6}
+            letterSpacing={-0.06}
+            size={4}
+            font="/assets/fonts/Inter_Bold.json"
+            onPointerOver={() => setHovered(true)}
+            onPointerOut={() => setHovered(false)}
+            onClick={fire}
+        >
+            {deliveryText}
+            <meshNormalMaterial/>
+        </Text3D>
+    </>)
 }
 
 useGLTF.preload('/assets/models/himars/himars-transformed.glb');
