@@ -1,6 +1,5 @@
-import {Text3D, useAnimations, useGLTF, useTexture} from "@react-three/drei";
-import {memo, useEffect, useRef, useState} from "react";
-import {MeshStandardMaterial} from "three";
+import {Text3D, useAnimations, useGLTF} from "@react-three/drei";
+import {memo, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {
     ANIMATION_DURATION,
     ANIMATION_ONE_PERCENT_DURATION,
@@ -9,10 +8,10 @@ import {
 } from "../../constants";
 import Model from "./Model";
 
-function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
-
+function Himars({position, textPosition, setKgDelivered, setIsLaunching,visible}) {
     const animationInterval = useRef(null);
     const deliveryInterval = useRef(null);
+
     const startSetKgDelivered = useRef(null);
     const stopSetKgDelivered = useRef(null);
 
@@ -25,12 +24,12 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
 
     const group = useRef();
     const {nodes, animations} = useGLTF('/assets/models/himars/himars-transformed.glb');
-    const {actions,names} = useAnimations(animations, group);
+    const {actions, names} = useAnimations(animations, group);
 
-    const isDemocracyLaunching = fireCompletedPercent > 0;
+    const isDemocracyLaunching = useMemo(() => fireCompletedPercent > 0, [fireCompletedPercent]);
     const deliveryAnimation = actions?.[names[0]];
 
-    let deliveryText = isDemocracyLaunching ? `Democracy\nLaunched! ${fireCompletedPercent}%` : `Launch\nDemocracy!`;
+    let deliveryText = useMemo(() => isDemocracyLaunching ? `Democracy\nLaunched! ${fireCompletedPercent}%` : `Launch\nDemocracy!`, [fireCompletedPercent, isDemocracyLaunching]);
 
     useEffect(() => {
         if (fireCompletedPercent >= 100) {
@@ -47,7 +46,7 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
     }, [deliveryAnimation, fireCompletedPercent, setIsLaunching]);
 
 
-    const fire = () => {
+    const fire = useCallback(() => {
         if (isDemocracyLaunching) return;
         setIsLaunching(true);
         deliveryAnimation.play();
@@ -64,14 +63,15 @@ function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
         animationInterval.current = setInterval(() => {
             setFireCompletedPercent(prev => prev + 1);
         }, ANIMATION_ONE_PERCENT_DURATION);
-    };
+    }, [deliveryAnimation, isDemocracyLaunching, setIsLaunching, setKgDelivered]);
 
 
     return (
         <>
-            <Model nodes={nodes} group={group} position={position} scale={4} />
+            <Model nodes={nodes} group={group} position={position} scale={4} visible={visible}/>
 
             <Text3D
+                visible={visible}
                 position={textPosition}
                 rotation={[0.2, -3, 0]}
                 curveSegments={32}

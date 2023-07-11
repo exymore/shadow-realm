@@ -3,7 +3,7 @@ import {useSpring, animated, easings} from "react-spring";
 import {MAX_LAUNCHERS_COUNT} from "../../constants";
 import {memo} from "react";
 
-function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileScreen}) {
+function HUD({addModel, kgDelivered, visibleModelsCount, removeModel, isLaunching, isMobileScreen}) {
 
     const {number} = useSpring({
         from: {number: 0},
@@ -18,11 +18,11 @@ function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileS
         <div className="fixed z-10 p-6 flex justify-between w-full">
             <div className="toast toast-top toast-start">
                 <div className="card w-92 bg-base-100/10 shadow-xl gap-1">
-                    <Button onClick={addModel} disabled={models.length === MAX_LAUNCHERS_COUNT}>Add
+                    <Button onClick={addModel} disabled={visibleModelsCount === MAX_LAUNCHERS_COUNT}>Add
                         democracy launcher!
                     </Button>
                     <Button onClick={removeModel}
-                            disabled={models.length === 1 || isLaunching}
+                            disabled={visibleModelsCount === 1 || isLaunching}
                     >Remove democracy launcher
                     </Button>
                 </div>
@@ -31,7 +31,7 @@ function HUD({addModel, kgDelivered, models, removeModel, isLaunching, isMobileS
             <div className={`toast ${isMobileScreen ? 'toast-bottom' : 'toast-top'} toast-end`}>
                 <div className="card w-96 bg-base-100/10 shadow-xl">
                     <h2 className="font-sans text-white text-2xl font-bold px-5 py-4 rounded-lg">Democracy
-                        launchers: {models.length}/3</h2>
+                        launchers: {visibleModelsCount}/3</h2>
 
                     <div className="px-5 py-4 rounded-lg">
                         <animated.span

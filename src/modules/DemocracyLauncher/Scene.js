@@ -18,42 +18,43 @@ export default function Scene() {
     const {progress} = useProgress();
     const isReady = progress === 100;
 
-    const [models, setModels] = useState([launchers[0]]);
+    const [visibleIds, setVisibleIds] = useState([0]);
     const [kgDelivered, setKgDelivered] = useState(0);
     const [isLaunching, setIsLaunching] = useState(false);
 
-    const removeModel = () => {
-        if (models.length === 1) return;
-        setModels(models => models.slice(0, -1));
+    const addModel = () => {
+        if (visibleIds.length === launchers.length) return;
+        const newModelId = launchers[visibleIds.length].idx;
+        setVisibleIds(ids => [...ids, newModelId]);
     };
 
-    const addModel = () => {
-        if (models.length === launchers.length) return;
-        const newModel = launchers[models.length];
-        setModels(models => [...models, newModel]);
+    const removeModel = () => {
+        if (visibleIds.length === 1) return;
+        setVisibleIds(models => models.slice(0, -1));
     };
 
     return (
         <>
-            {isReady && <HUD addModel={addModel} removeModel={removeModel} models={models} kgDelivered={kgDelivered}
+            {isReady && <HUD addModel={addModel} removeModel={removeModel} visibleModelsCount={visibleIds.length} kgDelivered={kgDelivered}
                              isLaunching={isLaunching} isMobileScreen={isMobileScreen}/>}
 
-            <Canvas>
+            <Canvas performance={{ min: 0.5 }}>
                 <Sky azimuth={1} inclination={0.6} distance={1000}/>
 
-                <pointLight position={[150, 10, 60]} intensity={0.7}/>
+                <pointLight position={[150, 10, 60]} intensity={0.3}/>
                 <pointLight position={[-150, 10, 60]} intensity={0.7}/>
                 <pointLight position={[0, 100, -100]} intensity={0.2}/>
 
                 <Suspense fallback={<Loader progress={progress}/>}>
-                    <Grass width={500} instances={250000}/>
+                    <Grass width={500} instances={200000}/>
 
-                    {models.map((model, index) =>
+                    {visibleIds.map((idx) =>
                         <Himars
-                            key={index}
+                            key={idx}
+                            visible={idx < visibleIds.length}
                             setKgDelivered={setKgDelivered}
                             setIsLaunching={setIsLaunching}
-                            {...model}
+                            {...launchers[idx]}
                         />
                     )}
                 </Suspense>
