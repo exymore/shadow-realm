@@ -13,16 +13,9 @@ const launchers = [{idx: 0, position: [0, -2, 0], textPosition: [10, 10, -40]}, 
 export default function Scene() {
     const [isMobileScreen, setIsMobileScreen] = useState(false);
 
-    const setMobileScreen = () => setIsMobileScreen(window.innerWidth < 768);
-
     useLayoutEffect(() => {
-        window.addEventListener('resize', setMobileScreen);
-
-        return () => {
-            window.removeEventListener('resize', setMobileScreen)
-        }
+        setIsMobileScreen(window.innerWidth < 768);
     }, []);
-
 
     const {progress} = useProgress();
     const isReady = progress === 100;

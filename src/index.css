@@ -30,6 +30,12 @@ code {
     z-index: 10;
 }
 
+@media (max-width: 768px) {
+    .loader-text {
+        font-size: 3rem;
+    }
+}
+
 .dimmer {
     z-index: 9;
     background: #000;
