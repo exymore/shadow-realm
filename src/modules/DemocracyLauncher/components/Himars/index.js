@@ -1,4 +1,4 @@
-import {Text3D, useAnimations, useTexture} from "@react-three/drei";
+import {Text3D, useAnimations, useGLTF, useTexture} from "@react-three/drei";
 import {useEffect, useRef, useState} from "react";
 import {MeshStandardMaterial} from "three";
 import {
@@ -7,26 +7,9 @@ import {
     DELIVERY_INTERVAL, GMLRS_WARHEAD_WEIGHT,
     LAUNCH_START_DELAY
 } from "../../constants";
+import {Model} from "./Model";
 
-const setFBXMaterial = (model, material) => {
-    if (['glass', 'WHEELS'].includes(model.name)) return;
-    if (model.children) {
-        if (model.children.length === 0) {
-            model.material = material
-        } else {
-            model.children.forEach(mesh => {
-                setFBXMaterial(mesh, material)
-            })
-        }
-    }
-};
-
-function Himars({fbx, position, textPosition, animations, setKgDelivered, setIsLaunching}) {
-
-    const [normalMap, roughnessMap] = useTexture([
-        'assets/models/himars/textures/Applique_176_normal.png',
-        'assets/models/himars/textures/Applique_176_metallicRoughness.png',
-    ]);
+function Himars({position, textPosition, setKgDelivered, setIsLaunching}) {
 
     const animationInterval = useRef(null);
     const deliveryInterval = useRef(null);
@@ -40,10 +23,12 @@ function Himars({fbx, position, textPosition, animations, setKgDelivered, setIsL
         document.body.style.cursor = hovered ? 'pointer' : 'auto'
     }, [hovered]);
 
-    const {actions, names} = useAnimations(animations, fbx);
+    const group = useRef();
+    const {nodes, animations} = useGLTF('/assets/models/himars/himars-transformed.glb');
+    const {actions,names} = useAnimations(animations, group);
 
     const isDemocracyLaunching = fireCompletedPercent > 0;
-    const deliveryAnimation = actions[names[names.length - 1]];
+    const deliveryAnimation = actions?.[names[0]];
 
     let deliveryText = isDemocracyLaunching ? `Democracy\nLaunched! ${fireCompletedPercent}%` : `Launch\nDemocracy!`;
 
@@ -81,25 +66,10 @@ function Himars({fbx, position, textPosition, animations, setKgDelivered, setIsL
         }, ANIMATION_ONE_PERCENT_DURATION);
     };
 
-    const defaultBodyMaterial = new MeshStandardMaterial({
-        color: 'rgb(154,155,137)',
-        normalMap,
-        roughnessMap
-    });
-
-    const cabinMaterial = new MeshStandardMaterial({
-        color: 'rgb(180,182,160)',
-        normalMap,
-        roughnessMap
-    });
-
-    setFBXMaterial(fbx, defaultBodyMaterial);
-    setFBXMaterial(fbx.children[2], cabinMaterial);
-
 
     return (
         <>
-            <primitive object={fbx} scale={0.04} position={position}/>
+            <Model nodes={nodes} group={group} position={position} scale={4} />
 
             <Text3D
                 position={textPosition}
@@ -123,5 +93,7 @@ function Himars({fbx, position, textPosition, animations, setKgDelivered, setIsL
         </>
     )
 }
+
+useGLTF.preload('/assets/models/himars/himars-transformed.glb');
 
 export default Himars;
